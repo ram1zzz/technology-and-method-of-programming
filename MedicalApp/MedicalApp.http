@@ -1,6 +1,134 @@
 @MedicalApp_HostAddress = http://localhost:5261
 
-GET {{MedicalApp_HostAddress}}/weatherforecast/
+### ===================================================
+### 1. ПАЦИЕНТЫ (/api/patients)
+### ===================================================
+
+### Получить всех пациентов
+GET {{MedicalApp_HostAddress}}/api/patients
 Accept: application/json
 
-###
+### Получить пациента по ID
+GET {{MedicalApp_HostAddress}}/api/patients/1
+Accept: application/json
+
+### Создать нового пациента
+POST {{MedicalApp_HostAddress}}/api/patients
+Content-Type: application/json
+
+{
+  "name": "Иванов Иван Иванович",
+  "birthDate": "1990-05-15T00:00:00",
+  "address": "ул. Ленина, д. 10, кв. 5",
+  "phoneNumber": "+79991112233"
+}
+
+### Обновить данные пациента
+PUT {{MedicalApp_HostAddress}}/api/patients/1
+Content-Type: application/json
+
+{
+  "name": "Иванов Иван Иванович (обновлен)",
+  "birthDate": "1990-05-15T00:00:00",
+  "address": "ул. Ленина, д. 10, кв. 99",
+  "phoneNumber": "+79990001122"
+}
+
+### Удалить пациента
+DELETE {{MedicalApp_HostAddress}}/api/patients/1
+
+### ===================================================
+### 2. ВИДЫ СПРАВОК (/api/spravkatypes)
+### ===================================================
+
+### Получить все виды справок
+GET {{MedicalApp_HostAddress}}/api/spravkatypes
+Accept: application/json
+
+### Получить вид справки по ID
+GET {{MedicalApp_HostAddress}}/api/spravkatypes/1
+Accept: application/json
+
+### ===================================================
+### 3. СПРАВКИ (/api/spravki)
+### ===================================================
+
+### Получить все справки
+GET {{MedicalApp_HostAddress}}/api/spravki
+Accept: application/json
+
+### [УЛУЧШЕНИЕ] Сортировка справок по цене (по возрастанию / убыванию)
+GET {{MedicalApp_HostAddress}}/api/spravki?sortBy=price&desc=true
+Accept: application/json
+
+### [УЛУЧШЕНИЕ] Сортировка справок по дате
+GET {{MedicalApp_HostAddress}}/api/spravki?sortBy=date&desc=false
+Accept: application/json
+
+### [УЛУЧШЕНИЕ] Статистика для главврача (кол-во справок и общая сумма)
+GET {{MedicalApp_HostAddress}}/api/spravki/stats
+Accept: application/json
+
+### Получить справку по ID
+GET {{MedicalApp_HostAddress}}/api/spravki/1
+Accept: application/json
+
+### Создать справку для пациента (название и цена берутся автоматически из вида справки)
+POST {{MedicalApp_HostAddress}}/api/spravki
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "spravkaTypeId": 1
+}
+
+### Попытка создать справку с несуществующим видом (даёт 400 Bad Request)
+POST {{MedicalApp_HostAddress}}/api/spravki
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "spravkaTypeId": 999
+}
+
+### Удалить справку по ID
+DELETE {{MedicalApp_HostAddress}}/api/spravki/1
+
+### ===================================================
+### 4. МОДУЛЬ: ЗАПИСЬ НА ПРИЁМ (/api/appointments)
+### ===================================================
+
+### Получить все записи на приём
+GET {{MedicalApp_HostAddress}}/api/appointments
+Accept: application/json
+
+### Получить запись по ID
+GET {{MedicalApp_HostAddress}}/api/appointments/1
+Accept: application/json
+
+### Создать запись на приём к врачу
+POST {{MedicalApp_HostAddress}}/api/appointments
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorName": "Смирнов В.В.",
+  "specialization": "Терапевт",
+  "appointmentDate": "2026-11-10T10:00:00",
+  "status": "Запланирован"
+}
+
+### Обновить запись на приём
+PUT {{MedicalApp_HostAddress}}/api/appointments/1
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorName": "Смирнов В.В.",
+  "specialization": "Терапевт",
+  "appointmentDate": "2026-11-10T11:00:00",
+  "status": "Завершён"
+}
+
+### Удалить запись на приём
+DELETE {{MedicalApp_HostAddress}}/api/appointments/1
