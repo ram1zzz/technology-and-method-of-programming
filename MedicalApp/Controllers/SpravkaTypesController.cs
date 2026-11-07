@@ -22,7 +22,7 @@ using MedicalApi.Models;
         }
 
         // GET: api/SpravkaTypes/1
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public ActionResult<SpravkaType> GetById(int id)
         {
             SpravkaType? type = Types.FirstOrDefault(s => s.Id == id);
@@ -60,7 +60,7 @@ using MedicalApi.Models;
         }
 
         // PUT: api/SpravkaTypes/1
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public IActionResult Update(int id, SpravkaType updatedType)
         {
             var existingType = Types.FirstOrDefault(t => t.Id == id);
@@ -83,7 +83,7 @@ using MedicalApi.Models;
         }
 
         // DELETE: api/SpravkaTypes/1
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public IActionResult Delete(int id)
         {
             var type = Types.FirstOrDefault(t => t.Id == id);

@@ -13,15 +13,18 @@ public class PatientsController : ControllerBase
         return Patients;
     }
 
-    [HttpGet("{id}")]
-    public ActionResult<Patient> GetById(int id)
+    [HttpGet("{id:int}")]
+    public IActionResult GetById([FromRoute] int id) 
     {
-        Patient? patient = Patients.FirstOrDefault(p => p.Id == id);
-        if (patient == null)
+        // ИСПРАВЛЕНО: Ищем пациента в статическом списке Patients
+        var item = Patients.FirstOrDefault(p => p.Id == id);
+
+        if (item == null)
         {
-            return NotFound("Пациент не найден.");
+            return NotFound();
         }
-        return patient;
+
+        return Ok(item);
     }
 
     [HttpPost]
@@ -46,7 +49,7 @@ public class PatientsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = patient.Id }, patient);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public ActionResult<Patient> Update(int id, Patient patient)
     {
         Patient? existingPatient = Patients.FirstOrDefault(p => p.Id == id);
@@ -73,10 +76,10 @@ public class PatientsController : ControllerBase
         existingPatient.Address = patient.Address;
         existingPatient.PhoneNumber = patient.PhoneNumber;
 
-        return existingPatient;
+        return Ok(existingPatient); // Лучше возвращать Ok(...) вместо неявного преобразования
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
         Patient? patient = Patients.FirstOrDefault(p => p.Id == id);

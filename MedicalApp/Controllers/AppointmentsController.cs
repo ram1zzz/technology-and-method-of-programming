@@ -13,7 +13,7 @@ public class AppointmentsController : ControllerBase
         return Appointments;
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public ActionResult<Appointment> GetById(int id)
     {
         Appointment? appointment = Appointments.FirstOrDefault(a => a.Id == id);
@@ -64,7 +64,7 @@ public class AppointmentsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = appointment.Id }, appointment);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public ActionResult<Appointment> Update(int id, Appointment updatedAppointment)
     {
         Appointment? existingAppointment = Appointments.FirstOrDefault(a => a.Id == id);
@@ -114,7 +114,7 @@ public class AppointmentsController : ControllerBase
         return existingAppointment;
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
         Appointment? appointment = Appointments.FirstOrDefault(a => a.Id == id);

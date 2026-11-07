@@ -43,7 +43,7 @@ public class SpravkiController : ControllerBase
         });
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public ActionResult<Spravka> GetById(int id)
     {
         Spravka? spravka = _spravki.FirstOrDefault(s => s.Id == id);
@@ -83,7 +83,7 @@ public class SpravkiController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = spravka.Id }, spravka);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public ActionResult<Spravka> Update(int id, Spravka updatedSpravka)
     {
         Spravka? existingSpravka = _spravki.FirstOrDefault(s => s.Id == id);
@@ -116,7 +116,7 @@ public class SpravkiController : ControllerBase
         return existingSpravka;
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
         Spravka? spravka = _spravki.FirstOrDefault(s => s.Id == id);
