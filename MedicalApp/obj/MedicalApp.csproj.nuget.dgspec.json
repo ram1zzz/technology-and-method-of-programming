@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\OneDrive\\Рабочий стол\\С#\\MedicalApp\\MedicalApp.csproj": {}
+    "C:\\Users\\User\\OneDrive\\Рабочий стол\\techology and method of programming\\MedicalApp\\MedicalApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\OneDrive\\Рабочий стол\\С#\\MedicalApp\\MedicalApp.csproj": {
+    "C:\\Users\\User\\OneDrive\\Рабочий стол\\techology and method of programming\\MedicalApp\\MedicalApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\OneDrive\\Рабочий стол\\С#\\MedicalApp\\MedicalApp.csproj",
+        "projectUniqueName": "C:\\Users\\User\\OneDrive\\Рабочий стол\\techology and method of programming\\MedicalApp\\MedicalApp.csproj",
         "projectName": "MedicalApp",
-        "projectPath": "C:\\Users\\User\\OneDrive\\Рабочий стол\\С#\\MedicalApp\\MedicalApp.csproj",
+        "projectPath": "C:\\Users\\User\\OneDrive\\Рабочий стол\\techology and method of programming\\MedicalApp\\MedicalApp.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\OneDrive\\Рабочий стол\\С#\\MedicalApp\\obj\\",
+        "outputPath": "C:\\Users\\User\\OneDrive\\Рабочий стол\\techology and method of programming\\MedicalApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -49,6 +49,16 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.12, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[10.0.3, )"
             },
             "Swashbuckle.AspNetCore.SwaggerUI": {
               "target": "Package",

@@ -1,58 +1,66 @@
 using Microsoft.AspNetCore.Mvc;
 using MedicalApi.Models;
+using Microsoft.EntityFrameworkCore;
+using MedicalApi.Data;
+
 
 [ApiController]
 [Route("api/[controller]")]
 public class PatientsController : ControllerBase
 {
-    public static List<Patient> Patients = new List<Patient>();
+    private readonly MedicalDbContext _db;
+
+    public PatientsController(MedicalDbContext db)
+    {
+        _db = db;
+    }
+
 
     [HttpGet]
-    public List<Patient> GetAll()
+    public async Task<List<Patient>> GetAll()
     {
-        return Patients;
+        return await _db.Patients.ToListAsync();
     }
 
     [HttpGet("{id:int}")]
-    public IActionResult GetById([FromRoute] int id) 
+    public async Task<ActionResult<Patient>> GetById(int id)
     {
         // ИСПРАВЛЕНО: Ищем пациента в статическом списке Patients
-        var item = Patients.FirstOrDefault(p => p.Id == id);
+        Patient? patient = await _db.Patients.FirstOrDefaultAsync(p => p.Id == id);
 
-        if (item == null)
+        if (patient == null)
         {
             return NotFound();
         }
 
-        return Ok(item);
+        return patient;
     }
 
     [HttpPost]
-    public ActionResult<Patient> Create(Patient patient)
+   public async Task<ActionResult<Patient>> Create(Patient patient)
     {
         if (string.IsNullOrWhiteSpace(patient.Name))
         {
             return BadRequest("Имя пациента не может быть пустым.");
         }
-        if (patient.Name.Length > 100)
+        if (patient.Name.Length > 20)
         {
-            return BadRequest("Имя пациента не может превышать 100 символов.");
+            return BadRequest("Имя пациента не может превышать 20 символов.");
         }
         if (patient.Name.Length <= 1)
         {
             return BadRequest("Имя пациента должно содержать хотя бы 2 символа.");
         }
 
-        patient.Id = Patients.Count > 0 ? Patients.Max(p => p.Id) + 1 : 1;
-        Patients.Add(patient);
-
+       _db.Patients.Add(patient);
+        await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = patient.Id }, patient);
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult<Patient> Update(int id, Patient patient)
+    public async Task<ActionResult<Patient>> Update(int id, Patient patient)
     {
-        Patient? existingPatient = Patients.FirstOrDefault(p => p.Id == id);
+        Patient? existingPatient = await _db.Patients.FirstOrDefaultAsync(p => p.Id == id);
         if (existingPatient == null)
         {
             return NotFound("Пациент не найден.");
@@ -75,20 +83,22 @@ public class PatientsController : ControllerBase
         existingPatient.BirthDate = patient.BirthDate;
         existingPatient.Address = patient.Address;
         existingPatient.PhoneNumber = patient.PhoneNumber;
+        await _db.SaveChangesAsync();
 
         return Ok(existingPatient); // Лучше возвращать Ok(...) вместо неявного преобразования
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> Delete(int id)
     {
-        Patient? patient = Patients.FirstOrDefault(p => p.Id == id);
+        Patient? patient = await _db.Patients.FirstOrDefaultAsync(p => p.Id == id);
         if (patient == null)
         {
             return NotFound("Пациент не найден.");
         }
 
-        Patients.Remove(patient);
+        _db.Patients.Remove(patient);
+        await _db.SaveChangesAsync();
         return NoContent();
     }
 }

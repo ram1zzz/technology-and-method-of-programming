@@ -1,40 +1,46 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MedicalApi.Models;
+using MedicalApi.Data;
 
 [ApiController]
 [Route("api/[controller]")]
 public class SpravkiController : ControllerBase
 {
-    private static List<Spravka> _spravki = new List<Spravka>();
+    private readonly MedicalDbContext _db;
+
+    public SpravkiController(MedicalDbContext db)
+    {
+        _db = db;
+    }
 
     // Сортировка по цене или по дате
     [HttpGet]
-    public List<Spravka> GetAll(string? sortBy = null, bool desc = false)
+    public async Task<List<Spravka>> GetAll(string? sortBy = null, bool desc = false)
     {
-        if (string.IsNullOrEmpty(sortBy))
+        IQueryable<Spravka> query = _db.Spravki.AsNoTracking();
+
+        if (!string.IsNullOrEmpty(sortBy))
         {
-            return _spravki;
+            if (sortBy.Equals("price", StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc ? query.OrderByDescending(s => s.Price) : query.OrderBy(s => s.Price);
+            }
+            else if (sortBy.Equals("date", StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc ? query.OrderByDescending(s => s.Date) : query.OrderBy(s => s.Date);
+            }
         }
 
-        if (sortBy.Equals("price", StringComparison.OrdinalIgnoreCase))
-        {
-            return desc ? _spravki.OrderByDescending(s => s.Price).ToList() : _spravki.OrderBy(s => s.Price).ToList();
-        }
-
-        if (sortBy.Equals("date", StringComparison.OrdinalIgnoreCase))
-        {
-            return desc ? _spravki.OrderByDescending(s => s.Date).ToList() : _spravki.OrderBy(s => s.Date).ToList();
-        }
-
-        return _spravki;
+        return await query.ToListAsync();
     }
 
     // Статистика для главврача: сколько справок выписано и на какую сумму
     [HttpGet("stats")]
-    public ActionResult GetStats()
+    public async Task<ActionResult> GetStats()
     {
-        int totalCount = _spravki.Count;
-        decimal totalAmount = _spravki.Sum(s => s.Price);
+        int totalCount = await _db.Spravki.CountAsync();
+        decimal totalAmount = await _db.Spravki.SumAsync(s => s.Price);
 
         return Ok(new
         {
@@ -44,9 +50,9 @@ public class SpravkiController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public ActionResult<Spravka> GetById(int id)
+    public async Task<ActionResult<Spravka>> GetById(int id)
     {
-        Spravka? spravka = _spravki.FirstOrDefault(s => s.Id == id);
+        Spravka? spravka = await _db.Spravki.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
         if (spravka == null)
         {
             return NotFound("Справка не найдена.");
@@ -55,50 +61,51 @@ public class SpravkiController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Spravka> Create(Spravka spravka)
+    public async Task<ActionResult<Spravka>> Create(Spravka spravka)
     {
-        Patient? patient = PatientsController.Patients.FirstOrDefault(p => p.Id == spravka.PatientId);
-        if (patient == null)
+        bool patientExists = await _db.Patients.AnyAsync(p => p.Id == spravka.PatientId);
+        if (!patientExists)
         {
             return BadRequest("Пациент с указанным ID не найден.");
         }
 
-        SpravkaType? spravkaType = SpravkaTypesController.Types.FirstOrDefault(t => t.Id == spravka.SpravkaTypeId);
+        SpravkaType? spravkaType = await _db.SpravkaTypes.FirstOrDefaultAsync(t => t.Id == spravka.SpravkaTypeId);
         if (spravkaType == null)
         {
             return BadRequest("Тип справки с указанным ID не найден.");
         }
 
+        spravka.Id = 0; // Id генерирует база данных
         spravka.Name = spravkaType.Name;
         spravka.Price = spravkaType.Price;
 
-        if (spravka.Date == default)
-        {
-            spravka.Date = DateTime.Today;
-        }
+        // Npgsql для timestamptz требует DateTime с Kind = Utc
+        spravka.Date = spravka.Date == default
+            ? DateTime.UtcNow.Date
+            : DateTime.SpecifyKind(spravka.Date, DateTimeKind.Utc);
 
-        spravka.Id = _spravki.Count > 0 ? _spravki.Max(s => s.Id) + 1 : 1;
-        _spravki.Add(spravka);
+        _db.Spravki.Add(spravka);
+        await _db.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetById), new { id = spravka.Id }, spravka);
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult<Spravka> Update(int id, Spravka updatedSpravka)
+    public async Task<ActionResult<Spravka>> Update(int id, Spravka updatedSpravka)
     {
-        Spravka? existingSpravka = _spravki.FirstOrDefault(s => s.Id == id);
+        Spravka? existingSpravka = await _db.Spravki.FirstOrDefaultAsync(s => s.Id == id);
         if (existingSpravka == null)
         {
             return NotFound("Справка не найдена.");
         }
 
-        Patient? patient = PatientsController.Patients.FirstOrDefault(p => p.Id == updatedSpravka.PatientId);
-        if (patient == null)
+        bool patientExists = await _db.Patients.AnyAsync(p => p.Id == updatedSpravka.PatientId);
+        if (!patientExists)
         {
             return BadRequest("Пациент с указанным ID не найден.");
         }
 
-        SpravkaType? spravkaType = SpravkaTypesController.Types.FirstOrDefault(t => t.Id == updatedSpravka.SpravkaTypeId);
+        SpravkaType? spravkaType = await _db.SpravkaTypes.FirstOrDefaultAsync(t => t.Id == updatedSpravka.SpravkaTypeId);
         if (spravkaType == null)
         {
             return BadRequest("Тип справки с указанным ID не найден.");
@@ -110,22 +117,25 @@ public class SpravkiController : ControllerBase
         existingSpravka.Price = spravkaType.Price;
         if (updatedSpravka.Date != default)
         {
-            existingSpravka.Date = updatedSpravka.Date;
+            existingSpravka.Date = DateTime.SpecifyKind(updatedSpravka.Date, DateTimeKind.Utc);
         }
 
-        return existingSpravka;
+        await _db.SaveChangesAsync();
+
+        return Ok(existingSpravka);
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> Delete(int id)
     {
-        Spravka? spravka = _spravki.FirstOrDefault(s => s.Id == id);
+        Spravka? spravka = await _db.Spravki.FirstOrDefaultAsync(s => s.Id == id);
         if (spravka == null)
         {
             return NotFound("Справка не найдена.");
         }
 
-        _spravki.Remove(spravka);
+        _db.Spravki.Remove(spravka);
+        await _db.SaveChangesAsync();
         return NoContent();
     }
 }

@@ -1,22 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MedicalApi.Models;
+using MedicalApi.Data;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AppointmentsController : ControllerBase
 {
-    public static List<Appointment> Appointments = new List<Appointment>();
+    private readonly MedicalDbContext _db;
+
+    public AppointmentsController(MedicalDbContext db)
+    {
+        _db = db;
+    }
 
     [HttpGet]
-    public List<Appointment> GetAll()
+    public async Task<List<Appointment>> GetAll()
     {
-        return Appointments;
+        return await _db.Appointments.AsNoTracking().ToListAsync();
     }
 
     [HttpGet("{id:int}")]
-    public ActionResult<Appointment> GetById(int id)
+    public async Task<ActionResult<Appointment>> GetById(int id)
     {
-        Appointment? appointment = Appointments.FirstOrDefault(a => a.Id == id);
+        Appointment? appointment = await _db.Appointments.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
         if (appointment == null)
         {
             return NotFound("Запись на приём не найдена.");
@@ -25,10 +32,10 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Appointment> Create(Appointment appointment)
+    public async Task<ActionResult<Appointment>> Create(Appointment appointment)
     {
-        Patient? patient = PatientsController.Patients.FirstOrDefault(p => p.Id == appointment.PatientId);
-        if (patient == null)
+        bool patientExists = await _db.Patients.AnyAsync(p => p.Id == appointment.PatientId);
+        if (!patientExists)
         {
             return BadRequest("Пациент с указанным ID не найден.");
         }
@@ -53,28 +60,30 @@ public class AppointmentsController : ControllerBase
             return BadRequest("Специализация врача не может быть пустой.");
         }
 
-        if (appointment.AppointmentDate == default)
-        {
-            appointment.AppointmentDate = DateTime.Now;
-        }
+        appointment.Id = 0; // Id генерирует база данных
 
-        appointment.Id = Appointments.Count > 0 ? Appointments.Max(a => a.Id) + 1 : 1;
-        Appointments.Add(appointment);
+        // Npgsql для timestamptz требует DateTime с Kind = Utc
+        appointment.AppointmentDate = appointment.AppointmentDate == default
+            ? DateTime.UtcNow
+            : DateTime.SpecifyKind(appointment.AppointmentDate, DateTimeKind.Utc);
+
+        _db.Appointments.Add(appointment);
+        await _db.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetById), new { id = appointment.Id }, appointment);
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult<Appointment> Update(int id, Appointment updatedAppointment)
+    public async Task<ActionResult<Appointment>> Update(int id, Appointment updatedAppointment)
     {
-        Appointment? existingAppointment = Appointments.FirstOrDefault(a => a.Id == id);
+        Appointment? existingAppointment = await _db.Appointments.FirstOrDefaultAsync(a => a.Id == id);
         if (existingAppointment == null)
         {
             return NotFound("Запись на приём не найдена.");
         }
 
-        Patient? patient = PatientsController.Patients.FirstOrDefault(p => p.Id == updatedAppointment.PatientId);
-        if (patient == null)
+        bool patientExists = await _db.Patients.AnyAsync(p => p.Id == updatedAppointment.PatientId);
+        if (!patientExists)
         {
             return BadRequest("Пациент с указанным ID не найден.");
         }
@@ -104,26 +113,29 @@ public class AppointmentsController : ControllerBase
         existingAppointment.Specialization = updatedAppointment.Specialization;
         if (updatedAppointment.AppointmentDate != default)
         {
-            existingAppointment.AppointmentDate = updatedAppointment.AppointmentDate;
+            existingAppointment.AppointmentDate = DateTime.SpecifyKind(updatedAppointment.AppointmentDate, DateTimeKind.Utc);
         }
         if (!string.IsNullOrWhiteSpace(updatedAppointment.Status))
         {
             existingAppointment.Status = updatedAppointment.Status;
         }
 
-        return existingAppointment;
+        await _db.SaveChangesAsync();
+
+        return Ok(existingAppointment);
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> Delete(int id)
     {
-        Appointment? appointment = Appointments.FirstOrDefault(a => a.Id == id);
+        Appointment? appointment = await _db.Appointments.FirstOrDefaultAsync(a => a.Id == id);
         if (appointment == null)
         {
             return NotFound("Запись на приём не найдена.");
         }
 
-        Appointments.Remove(appointment);
+        _db.Appointments.Remove(appointment);
+        await _db.SaveChangesAsync();
         return NoContent();
     }
 }

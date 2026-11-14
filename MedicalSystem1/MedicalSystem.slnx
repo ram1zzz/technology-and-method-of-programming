@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../MedicalApp/MedicalApp.csproj" />
   <Project Path="MedicalSystem/MedicalSystem.csproj" />
 </Solution>
