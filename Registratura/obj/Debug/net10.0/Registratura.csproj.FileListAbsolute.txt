@@ -1,0 +1,15 @@
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\bin\Debug\net10.0\Registratura.exe
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\bin\Debug\net10.0\Registratura.deps.json
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\bin\Debug\net10.0\Registratura.runtimeconfig.json
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\bin\Debug\net10.0\Registratura.dll
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\bin\Debug\net10.0\Registratura.pdb
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.AssemblyInfoInputs.cache
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.AssemblyInfo.cs
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.csproj.CoreCompileInputs.cache
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.sourcelink.json
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.dll
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\refint\Registratura.dll
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.pdb
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\Registratura.genruntimeconfig.cache
+C:\Users\User\OneDrive\Рабочий стол\techology and method of programming\Registratura\obj\Debug\net10.0\ref\Registratura.dll
